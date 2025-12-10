@@ -1,0 +1,335 @@
+@import "tailwindcss" source("../../");
+
+@theme {
+  /* Breakpoints */
+  --breakpoint-xs: 30rem;
+
+  /* Design System Colors - Muted Dark Theme */
+  --color-bg-primary: #09090b; /* Zinc 950 */
+  --color-bg-secondary: #18181b; /* Zinc 900 */
+  --color-bg-tertiary: #27272a; /* Zinc 800 */
+  --color-bg-hover: #3f3f46; /* Zinc 700 */
+  --color-bg-active: #52525b; /* Zinc 600 */
+
+  /* Accent Colors - High Saturation */
+  --color-accent-primary: #3b82f6; /* Blue 500 */
+  --color-accent-primary-hover: #2563eb; /* Blue 600 */
+  --color-accent-secondary: #f97316; /* Orange 500 */
+  --color-accent-secondary-hover: #ea580c; /* Orange 600 */
+  
+  /* Text Colors */
+  --color-text-main: #f4f4f5; /* Zinc 100 */
+  --color-text-muted: #a1a1aa; /* Zinc 400 */
+  --color-text-dim: #71717a; /* Zinc 500 */
+
+  /* Border Colors */
+  --color-border-subtle: #27272a; /* Zinc 800 */
+  --color-border-medium: #3f3f46; /* Zinc 700 */
+  --color-border-strong: #52525b; /* Zinc 600 */
+
+  /* Animation */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Global Styles */
+html {
+  scroll-behavior: smooth;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  @apply bg-[var(--color-bg-primary)] text-[var(--color-text-main)];
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-[var(--color-bg-primary)];
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[var(--color-bg-tertiary)] rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-[var(--color-bg-hover)];
+}
+
+/* Alpine.js cloak */
+[x-cloak] {
+  display: none !important;
+}
+
+/* HTMX indicators */
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: block;
+}
+
+/* Lazy loading */
+.lazyload,
+.lazyloading {
+  object-fit: none;
+}
+
+.clip-half {
+  clip-path: inset(0 50% 0 0);
+}
+
+/* Media Grid - Enhanced */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (min-width: 30rem) {
+  .media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* Hover variants for mobile */
+@custom-variant hover-tap (&:hover);
+@custom-variant parent-hover-tap (.hover-tap:hover &);
+
+/* Toast Notifications - Redesigned */
+.toast-error {
+  @apply bg-red-600/90 border border-red-500/50 backdrop-blur-sm shadow-lg;
+}
+
+.toast-warning {
+  @apply bg-amber-600/90 border border-amber-500/50 backdrop-blur-sm shadow-lg;
+}
+
+.toast-success {
+  @apply bg-emerald-600/90 border border-emerald-500/50 backdrop-blur-sm shadow-lg;
+}
+
+.toast-info {
+  @apply bg-indigo-600/90 border border-indigo-500/50 backdrop-blur-sm shadow-lg;
+}
+
+/* Glassmorphism Utilities */
+.glass-morphism {
+  background: rgba(26, 26, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-morphism-light {
+  background: rgba(42, 42, 53, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Glow Effects */
+.glow-indigo {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+.glow-pink {
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Smooth Transitions */
+.transition-smooth {
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-bounce {
+  transition: transform 250ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Select2 Dropdown Styling - Enhanced */
+.select2-container--tailwindcss-4 {
+  @apply min-w-full;
+}
+
+.select2-container--tailwindcss-4.select2-container--open .select2-dropdown {
+  @apply w-full mt-1 overflow-auto rounded-lg text-base bg-[#1a1a1e] border-[#3a3a45] border-2 shadow-xl;
+}
+
+.select2-container--tailwindcss-4 .select2-results__message {
+  @apply text-sm text-gray-400;
+}
+
+.select2-container--tailwindcss-4 .select2-results__option--highlighted {
+  @apply text-white bg-[#22222a];
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple {
+  @apply rounded-lg text-base sm:text-sm/6 bg-[#1a1a1e] p-2 cursor-default text-white border-2 border-[#2a2a35];
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple:hover {
+  @apply border-[#3a3a45];
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple .select2-selection__rendered {
+  @apply flex flex-row flex-wrap gap-2 m-0 p-0 list-none;
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple .select2-selection__choice {
+  @apply flex flex-row-reverse items-center gap-1.5 bg-[#22222a] text-gray-200 pl-2.5 pr-1.5 py-1.5 rounded-md text-sm border border-indigo-500/30;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple .select2-selection__choice:hover {
+  @apply bg-[#2a2a35] border-indigo-500/50;
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple .select2-selection__choice__remove {
+  @apply mr-1 h-4 w-4 pb-[0.10rem] items-center flex justify-center rounded-full hover:bg-red-500/20 hover:text-red-400 cursor-pointer;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple .select2-search--inline {
+  @apply block my-0.5;
+}
+
+.select2-container--tailwindcss-4 .select2-selection--multiple .select2-search--inline .select2-search__field {
+  @apply h-6 p-0 m-0 text-sm/6 bg-transparent border-0 focus:outline-hidden focus:ring-0 placeholder:text-gray-500 placeholder:text-sm/6 placeholder:font-sans;
+}
+
+.select2-container--tailwindcss-4.select2-container--focus .select2-selection--multiple {
+  @apply outline-none ring-2 ring-indigo-500/50 border-indigo-500/50 appearance-none;
+}
+
+/* Chart Tooltips - Enhanced */
+#chartjs-tooltip {
+  opacity: 0;
+  position: absolute;
+  background: rgba(10, 10, 11, 0.95);
+  color: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 1px rgba(99, 102, 241, 0.3);
+  transition: opacity 0.2s ease;
+  min-width: 180px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+#chartjs-tooltip table {
+  margin: 0;
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#chartjs-tooltip table th {
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+  font-weight: 600;
+  color: #f5f5f7;
+}
+
+#chartjs-tooltip table td {
+  padding: 8px 6px;
+  white-space: nowrap;
+  color: #a0a0ab;
+}
+
+#chartjs-tooltip table tr.total-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+#chartjs-tooltip table tr.total-row td {
+  padding-top: 12px;
+  color: #f5f5f7;
+}
+
+#chartjs-pie-tooltip {
+  opacity: 0;
+  position: absolute;
+  background: rgba(10, 10, 11, 0.95);
+  color: white;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.2s ease;
+  min-width: 140px;
+  text-align: center;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+#chartjs-pie-tooltip .pie-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f5f5f7;
+}
+
+#chartjs-pie-tooltip .pie-value {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #a0a0ab;
+}
+
+#chartjs-pie-tooltip .pie-percent {
+  font-weight: 600;
+  font-size: 16px;
+  margin-top: 4px;
+  color: #6366f1;
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+      #121213 0%,
+      #1a1a1e 50%,
+      #121213 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

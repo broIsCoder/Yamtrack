@@ -1,0 +1,350 @@
+{% load static %}
+{% load app_tags %}
+
+<!DOCTYPE html>
+<html lang="en" class="scheme-dark bg-[var(--color-bg-primary)]">
+  <head>
+    {# Required meta tags #}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Yamtrack, Media Tracker">
+    <meta name="description" content="Search and track media on Yamtrack.">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-title" content="Yamtrack">
+    
+    <title>
+      {% block title %}
+        Yamtrack
+      {% endblock title %}
+    </title>
+
+    {% block extra_head %}
+    {% endblock extra_head %}
+
+    <link rel="stylesheet"
+          type="text/css"
+          href="{% static 'css/main.css' %}{% get_static_file_mtime 'css/main.css' %}">
+
+    <script src="{% static 'js/libraries/htmx-2.0.4.min.js' %}"></script>
+    <script defer src="{% static 'js/libraries/alpinejs-3.14.9.min.js' %}"></script>
+    <script src="{% static 'js/libraries/lazysizes-5.3.2.min.js' %}" async></script>
+
+    <link rel="apple-touch-icon"
+          sizes="180x180"
+          href="{% static "favicon/apple-touch-icon.png" %}">
+    <link rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="{% static "favicon/favicon-32x32.png" %}">
+    <link rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="{% static "favicon/favicon-16x16.png" %}">
+    <link rel="manifest" href="{% static "favicon/site.webmanifest" %}">
+    <link rel="mask-icon"
+          href="{% static "favicon/safari-pinned-tab.svg" color="#181a1b" %}">
+    <link rel="shortcut icon" href="{% static "favicon/favicon.ico" %}">
+    <meta name="msapplication-TileColor" content="#181a1b">
+    <meta name="msapplication-config"
+          content="{% static "favicon/browserconfig.xml" %}">
+    <meta name="theme-color" content="#181a1b">
+
+  </head>
+
+  <body>
+    {% block body %}
+      {# Main container for the layout #}
+      <div class="flex min-h-screen bg-[var(--color-bg-primary)] text-gray-100"
+           x-data="{ isMobileMenuOpen: false }">
+
+        {# Mobile menu overlay #}
+        <div x-show="isMobileMenuOpen"
+             class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+             x-transition.opacity
+             @click="isMobileMenuOpen = false"></div>
+
+        {# Sidebar #}
+        <aside class="fixed top-0 left-0 z-40 h-screen w-64 bg-[var(--color-bg-primary)] transform transition-all duration-300 ease-out border-r border-[#27272a] -translate-x-full lg:translate-x-0 lg:sticky flex flex-col shadow-2xl"
+               :class="isMobileMenuOpen ? 'translate-x-0' : ''">
+          <div class="h-16 border-b border-[#27272a] flex items-center px-6">
+            <h1 class="text-2xl font-bold text-[#f4f4f5] tracking-tight">Yamtrack</h1>
+          </div>
+          <nav class="p-4 flex-1 overflow-y-auto">
+            <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white p-2 rounded-lg z-50">Skip to content</a>
+            <ul class="space-y-2 mb-6">
+              <li>
+                <a href="{% url 'home' %}"
+                   class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if request.path == "/" %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                  {% if request.path|str_equals:"/" %}
+                    {% include "app/icons/house.svg" with classes="w-5 h-5 text-blue-500" %}
+                  {% else %}
+                    {% include "app/icons/house.svg" with classes="w-5 h-5 text-current" %}
+                  {% endif %}
+                  <span>Home</span>
+                </a>
+              </li>
+
+              {% get_sidebar_media_types user as sidebar_media_types %}
+              {% for item in sidebar_media_types %}
+                <li>
+                  <a href="{% url 'medialist' media_type=item.media_type %}"
+                   class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if media_type == item.media_type %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                  {% icon item.media_type is_active=media_type|str_equals:item.media_type %}
+                  <span>{{ item.display_name }}</span>
+                </a>
+                </li>
+              {% endfor %}
+            </ul>
+
+            <div class="border-t border-[#27272a] pt-4">
+              <ul class="space-y-2">
+                {% url 'create_entry' as create_entry_url %}
+                <li>
+                  <a href="{{ create_entry_url }}"
+                     class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if request.path == create_entry_url %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                    {% if request.path|str_equals:create_entry_url %}
+                      {% include "app/icons/circle-plus.svg" with classes="w-5 h-5 text-blue-500" %}
+                    {% else %}
+                      {% include "app/icons/circle-plus.svg" with classes="w-5 h-5 text-current" %}
+                    {% endif %}
+                    <span>Create Custom</span>
+                  </a>
+                </li>
+
+                {% url 'statistics' as statistics_url %}
+                <li>
+                  <a href="{{ statistics_url }}"
+                     class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if request.path == statistics_url %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                    {% if request.path|str_equals:statistics_url %}
+                      {% include "app/icons/bars-pyramid.svg" with classes="w-5 h-5 text-blue-500" %}
+                    {% else %}
+                      {% include "app/icons/bars-pyramid.svg" with classes="w-5 h-5 text-current" %}
+                    {% endif %}
+                    <span>Statistics</span>
+                  </a>
+                </li>
+
+                {% url 'lists' as lists_url %}
+                <li>
+                  <a href="{{ lists_url }}"
+                     class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if request.path == lists_url %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                    {% if request.path|str_equals:lists_url %}
+                      {% include "app/icons/folder-plus.svg" with classes="w-5 h-5 text-blue-500" %}
+                    {% else %}
+                      {% include "app/icons/folder-plus.svg" with classes="w-5 h-5 text-current" %}
+                    {% endif %}
+                    <span>Lists</span>
+                  </a>
+                </li>
+
+                {% url 'calendar' as calendar_url %}
+                <li>
+                  <a href="{{ calendar_url }}"
+                     class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if request.path == calendar_url %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                    {% if request.path|str_equals:calendar_url %}
+                      {% include "app/icons/calendar.svg" with classes="w-5 h-5 text-blue-500" %}
+                    {% else %}
+                      {% include "app/icons/calendar.svg" with classes="w-5 h-5 text-current" %}
+                    {% endif %}
+                    <span>Calendar</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+
+          <div class="p-4 border-t border-[#27272a] mt-auto">
+            <div class="space-y-2">
+              {% url 'account' as account_url %}
+              {% url 'notifications' as notifications_url %}
+              {% url 'sidebar' as sidebar_url %}
+              {% url 'integrations' as integrations_url %}
+              {% url 'import_data' as import_url %}
+              {% url 'export_data' as export_url %}
+              <a href="{{ account_url }}"
+                 class="flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-medium {% if request.path == account_url or request.path == notifications_url or request.path == sidebar_url or request.path == integrations_url or request.path == import_url or request.path == export_url %}text-[#f4f4f5] bg-[#27272a] border border-blue-500/30 shadow-sm{% else %}text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a]{% endif %}">
+                {% if request.path == account_url or request.path == notifications_url or request.path == sidebar_url or request.path == integrations_url or request.path == import_url or request.path == export_url %}
+                  {% include "app/icons/settings.svg" with classes="w-5 h-5 text-blue-500" %}
+                {% else %}
+                  {% include "app/icons/settings.svg" with classes="w-5 h-5 text-current" %}
+                {% endif %}
+                <span>Settings</span>
+              </a>
+
+              <form method="post" action="{% url 'account_logout' %}" class="w-full">
+                {% csrf_token %}
+                <button type="submit"
+                        class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5] transition-all duration-200 text-sm font-medium cursor-pointer">
+                  {% include "app/icons/logout.svg" with classes="w-5 h-5" %}
+                  <span>Logout</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </aside>
+
+        {# Main content #}
+        <div class="flex-1 flex flex-col min-h-screen">
+          {# Top bar #}
+          <div class="sticky top-0 z-10 bg-[var(--color-bg-primary)]/90 backdrop-blur-md border-b border-[#27272a] shadow-lg">
+            <div class="container mx-auto px-4">
+              <div class="flex items-center justify-between lg:justify-center h-16">
+                {# Mobile: sidebar toggle button #}
+                <button @click="isMobileMenuOpen = !isMobileMenuOpen"
+                        class="lg:hidden pe-3 text-[#a1a1aa] hover:text-[#f4f4f5] transition-all duration-200">
+                  {% include "app/icons/hamburger.svg" with classes="w-6 h-6" %}
+                </button>
+
+                {# Define search type from current media type (if it exists) or last search type #}
+                {% if media_type == MediaTypes.SEASON.value %}
+                  {% firstof MediaTypes.TV.value as search_type %}
+                {% else %}
+                  {% firstof media_type user.last_search_type as search_type %}
+                {% endif %}
+
+                {# Search bar #}
+                <div class="relative w-full max-w-2xl">
+                  <form method="get"
+                        action="{% url 'search' %}"
+                        x-data=" { isOpen: false, selectedType: { display: '{{ search_type|media_type_readable_plural }}', value: '{{ search_type }}' }, mediaTypes: {% get_search_media_types user as search_types %}{{ search_types }}, getPlaceholder() { return `Search ${this.selectedType.display.toLowerCase()}...` } }">
+                    <div class="flex shadow-sm rounded-2xl">
+                      <div class="relative grow">
+                        {# Search input #}
+                        <input type="search"
+                               name="q"
+                               value="{{ request.GET.q }}"
+                               :placeholder="getPlaceholder()"
+                               class="w-full py-2.5 pl-10 pr-4 text-sm text-[#f4f4f5] bg-[#18181b] rounded-l-2xl border border-r-0 border-[#27272a] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 placeholder-[#71717a] transition-all duration-200">
+                        <button type="submit"
+                                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#a1a1aa] hover:text-blue-500 transition-all duration-200 focus:outline-none cursor-pointer">
+                          {% include "app/icons/magnifying-glass.svg" with classes="w-5 h-5" %}
+                        </button>
+                      </div>
+
+                      <input type="hidden" name="media_type" :value="selectedType.value">
+
+                      {# Media type dropdown #}
+                      <button type="button"
+                              @click="isOpen = !isOpen"
+                              @click.away="isOpen = false"
+                              class="flex items-center justify-between max-w-[110px] sm:max-w-none sm:w-32 px-3 sm:px-4 py-2.5 text-sm text-[#f4f4f5] bg-[#18181b] rounded-r-2xl border border-[#27272a] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 hover:bg-[#27272a] transition-all duration-200 cursor-pointer">
+                        <span class="truncate sm:whitespace-normal" x-text="selectedType.display"></span>
+                        {% include "app/icons/chevron-down.svg" with classes="w-4 h-4 ml-2" %}
+                      </button>
+                      <ul x-cloak
+                          x-show="isOpen"
+                          @keydown.escape.window="isOpen = false"
+                          x-transition:enter="transition ease-out duration-100"
+                          x-transition:enter-start="transform opacity-0 scale-95"
+                          x-transition:enter-end="transform opacity-100 scale-100"
+                          x-transition:leave="transition ease-in duration-75"
+                          x-transition:leave-start="transform opacity-100 scale-100"
+                          x-transition:leave-end="transform opacity-0 scale-95"
+                          class="absolute z-20 py-1.5 mt-12 overflow-auto text-sm text-[#f4f4f5] bg-[#18181b] rounded-2xl shadow-xl border border-[#3f3f46] right-0 w-36">
+                        <template x-for="type in mediaTypes" :key="type.value">
+                          <li @click="selectedType = type; isOpen = false"
+                              class="px-4 py-2.5 cursor-pointer hover:bg-[#27272a] transition-all duration-200 rounded-lg mx-1"
+                              x-text="type.display"></li>
+                        </template>
+                      </ul>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <main id="main-content" class="flex-1 relative bg-[var(--color-bg-primary)]">
+            <div class="container mx-auto px-6 sm:px-8 py-10">
+              {% block content %}
+              {% endblock content %}
+            </div>
+          </main>
+        </div>
+      </div>
+      
+      {# Back to Top Button #}
+      <button id="back-to-top" 
+              class="fixed bottom-8 right-8 p-3 rounded-full bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all duration-300 opacity-0 invisible translate-y-4 z-40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-[#09090b]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+      </button>
+    {% endblock body %}
+
+    {% if messages %}
+      <div class="fixed top-24 right-0 left-0 {% block messages_sidebar_offset %}lg:left-64{% endblock messages_sidebar_offset %} z-50 flex justify-center pointer-events-none">
+        <div class="w-full max-w-xl px-4 space-y-2 pointer-events-auto">
+          {% for message in messages %}
+            {# djlint:off #}
+            <div class="flex items-center gap-2.5 rounded-xl px-4 py-3 shadow-xl text-white toast-{{ message.tags }} opacity-0 border border-white/10"
+              x-data="{ 
+                  init() { 
+                    // Start entrance animation after a tiny delay
+                    setTimeout(() => this.$el.classList.add('opacity-100', 'transform-none'), 10);
+                    this.$el.classList.add('transition-all', 'duration-300', 'ease-out', 'transform', 'translate-y-[-1rem]');
+          
+                    {% if message.tags not in 'warning,error' %}
+                      // Auto-dismiss non-critical messages
+                      setTimeout(() => this.$el.remove(), 5000);
+                    {% endif %}
+                  }
+              }">
+
+              {% if message.tags == 'success' %}
+                {% include "app/icons/states/completed.svg" with classes="w-4 h-4 text-emerald-300 shrink-0" %}
+              {% elif message.tags == 'warning' %}
+                {% include "app/icons/warning.svg" with classes="w-4 h-4 text-amber-300 shrink-0" %}
+              {% elif message.tags == 'error' %}
+                {% include "app/icons/warning.svg" with classes="w-4 h-4 text-red-300 shrink-0" %}
+              {% elif message.tags == "info" %}
+                {% include "app/icons/info.svg" with classes="w-4 h-4 text-blue-300 shrink-0" %}
+              {% endif %}
+
+              <p class="text-sm font-medium flex-1">{{ message }}</p>
+              <button class="text-current opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+                      @click="$el.parentElement.remove()">
+                {% include "app/icons/x.svg" with classes="w-4 h-4" %}
+              </button>
+            </div>
+            {# djlint:on #}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% block js %}
+    {% endblock js %}
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/static/js/serviceworker.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+
+      // Back to Top functionality
+      const backToTopButton = document.getElementById('back-to-top');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          backToTopButton.classList.remove('opacity-0', 'invisible', 'translate-y-4');
+        } else {
+          backToTopButton.classList.add('opacity-0', 'invisible', 'translate-y-4');
+        }
+      });
+      backToTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    </script>
+
+    <script src="{% static 'js/mediaStatusDateHandler.js' %}{% get_static_file_mtime 'js/mediaStatusDateHandler.js' %}"></script>
+  </body>
+</html>

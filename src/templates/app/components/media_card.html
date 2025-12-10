@@ -1,0 +1,162 @@
+{% load app_tags %}
+
+<div class="{% if secondary_color %}bg-[#1a1a1e]{% else %}bg-[#121213]{% endif %} rounded-xl overflow-hidden shadow-lg hover:shadow-xl relative transition-all duration-300 hover:-translate-y-1 border border-[#2a2a35]/50"
+     x-data="{ trackOpen: false, listsOpen: false, historyOpen: false }">
+  <div class="relative">
+    <a href="{{ item|media_url }}">
+    <img alt="{{ title }}"
+         class="lazyload w-full {% if from_grid %}aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
+         data-src="{{ item.image }}"
+         src="{{ IMG_NONE }}">
+    </a>
+
+    {% if media.status %}
+      <div class="absolute top-2.5 left-2.5 bg-black/85 backdrop-blur-sm text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center shadow-lg border border-white/10">
+        {% if media.status == Status.COMPLETED.value %}
+          <div class="w-4 h-4 {{ Status.COMPLETED.value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+            {% include "app/icons/states/completed.svg" %}
+          </div>
+
+        {% elif media.status == Status.IN_PROGRESS.value %}
+          <div class="w-4 h-4 {{ Status.IN_PROGRESS.value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+            {% include "app/icons/states/in-progress.svg" %}
+          </div>
+
+        {% elif media.status == Status.PAUSED.value %}
+          <div class="w-4 h-4 {{ Status.PAUSED.value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+            {% include "app/icons/states/paused.svg" %}
+          </div>
+
+        {% elif media.status == Status.PLANNING.value %}
+          <div class="w-4 h-4 {{ Status.PLANNING.value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+            {% include "app/icons/states/planning.svg" %}
+          </div>
+
+        {% elif media.status == Status.DROPPED.value %}
+          <div class="w-4 h-4 {{ Status.DROPPED.value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+            {% include "app/icons/states/dropped.svg" %}
+          </div>
+        {% endif %}
+
+        {% if media.end_date is not None %}
+          <span class="text-sm text-white">{{ media.end_date|date:"SHORT_DATE_FORMAT" }}</span>
+        {% elif media.start_date is not None %}
+          <span class="text-sm text-white">{{ media.start_date|date:"SHORT_DATE_FORMAT" }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if media.score is not None %}
+      <div class="absolute {% if from_grid %}sm:top-2.5 sm:right-2.5 sm:left-auto {% endif %}top-10 left-2.5 bg-black/85 backdrop-blur-sm text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center shadow-lg border border-white/10">
+        {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
+        <span class="text-sm text-white">{{ media.formatted_score }}</span>
+      </div>
+    {% endif %}
+
+    {% if media.progress and media_type != MediaTypes.MOVIE.value %}
+      <div class="absolute bottom-2.5 left-2.5 bg-black/85 backdrop-blur-sm text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center shadow-lg border border-white/10">
+        <span class="text-sm text-white">
+          {{ media.formatted_progress }}
+          {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
+        </span>
+      </div>
+    {% endif %}
+
+    {% if media.repeats > 1 %}
+      <div class="absolute sm:bottom-2.5 sm:right-2.5 sm:left-auto bottom-10 left-2.5 bg-black/85 backdrop-blur-sm text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center shadow-lg border border-white/10">
+        {% include "app/icons/repeat.svg" with classes="w-4 h-4 text-slate-200 mr-1" %}
+        <span class="text-sm text-white">{{ media.repeats }}</span>
+      </div>
+    {% endif %}
+
+    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-center opacity-0 hover-tap:opacity-100{% if user.clickable_media_cards %} pointer-coarse:hidden{% endif %} transition-all duration-300">
+      <a href="{{ item|media_url }}" class="absolute inset-0"></a>
+
+      <div class="relative flex items-center justify-center space-x-2.5">
+        {% if item.media_type == MediaTypes.EPISODE.value %}
+          <button @click="trackOpen = true"
+                  class="p-3 bg-[#6366f1] hover:bg-[#7c3aed] text-white rounded-full hover:scale-110 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+            {% if media %}
+              {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
+            {% else %}
+              {% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}
+            {% endif %}
+          </button>
+        {% else %}
+          {# Track Button #}
+          <button class="p-3 bg-[#6366f1] hover:bg-[#7c3aed] text-white rounded-full hover:scale-110 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(99,102,241,0.5)]"
+                  title="Add to tracker"
+                  hx-get="{% media_view_url 'track_modal' item %}"
+                  hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}", "instance_id": "{{ media.id }}"}'
+                  hx-target="#{% component_id 'track' item media.id %}"
+                  hx-trigger="click once"
+                  @click="trackOpen = true">
+            {% include "app/icons/edit.svg" with classes="w-4 h-4" %}
+          </button>
+        {% endif %}
+
+        {# Lists Button #}
+        <button class="p-3 bg-[#10b981] hover:bg-[#059669] text-white rounded-full hover:scale-110 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                title="Add to custom lists"
+                hx-get="{% media_view_url 'lists_modal' item %}"
+                hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                hx-target="#{% component_id 'lists' item %}"
+                hx-trigger="click once"
+                @click="listsOpen = true">
+          {% include "app/icons/list-add.svg" with classes="w-4 h-4" %}
+        </button>
+
+        {# History Button #}
+        <button class="p-3 bg-[#f59e0b] hover:bg-[#d97706] text-white rounded-full hover:scale-110 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(245,158,11,0.4)]"
+                title="View your activity history"
+                hx-get="{% media_view_url 'history_modal' item %}"
+                hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                hx-target="#{% component_id 'history' item %}"
+                hx-trigger="click once"
+                @click="historyOpen = true">
+          {% include "app/icons/history.svg" with classes="w-4 h-4" %}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-4">
+    <a href="{{ item|media_url }}"
+       class="text-sm font-semibold text-[#f5f5f7] hover:text-[#6366f1] transition-all duration-300 line-clamp-1"
+       title="{{ title }}">{{ title }}</a>
+  </div>
+
+  {% if item.media_type == MediaTypes.EPISODE.value %}
+    {% include "app/components/fill_track_episode.html" with request=request media=item episode=item episode_title=title csrf_token=csrf_token TRACK_TIME=TRACK_TIME only %}
+  {% else %}
+    {# Track Modal #}
+    <div x-show="trackOpen"
+         @keydown.escape.window="trackOpen = false"
+         class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="w-152 max-h-[90vh] px-4 md:px-0 relative z-60"
+           @click.outside="trackOpen = false">
+        <div id="{% component_id 'track' item media.id %}"></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {# Lists Modal #}
+  <div x-show="listsOpen"
+       @keydown.escape.window="listsOpen = false"
+       class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
+         @click.outside="listsOpen = false">
+      <div id="{% component_id 'lists' item %}"></div>
+    </div>
+  </div>
+
+  {# History Modal #}
+  <div x-show="historyOpen"
+       @keydown.escape.window="historyOpen = false"
+       class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
+         @click.outside="historyOpen = false">
+      <div id="{% component_id 'history' item %}"></div>
+    </div>
+  </div>
+</div>
