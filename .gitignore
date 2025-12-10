@@ -1,15 +1,43 @@
-# Python
+# Python env
 venv/
-__pycache__/
+.venv/
+env/
 
-# Node / JS
-node_modules/
-tailwindcss*
-src/tailwindcss
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment files
+*.env
 
 # Playwright
 playwright/.cache/
 playwright/driver/
+**/driver/node
+**/driver/linux*
+**/driver/mac*
+**/driver/win*
 
-# OS clutter
+# Node ecosystem
+node_modules/
+*.log
+
+# Tailwind standalone binaries
+tailwindcss
+tailwindcss.exe
+tailwindcss-linux-x64
+tailwindcss-darwin-x64
+tailwindcss-darwin-arm64
+src/tailwindcss
+
+# Build outputs
+dist/
+build/
+
+# OS & editor trash
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
