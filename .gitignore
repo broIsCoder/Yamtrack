@@ -1,11 +1,15 @@
-__pycache__
-*.pyc
-.coverage*
-src/staticfiles
-src/db/db.sqlite3
-db.sqlite3-shm
-db.sqlite3-wal
-.vscode/launch.json
-CLAUDE.md
-requests.http
-TODO.txt
+# Python
+venv/
+__pycache__/
+
+# Node / JS
+node_modules/
+tailwindcss*
+src/tailwindcss
+
+# Playwright
+playwright/.cache/
+playwright/driver/
+
+# OS clutter
+.DS_Store
