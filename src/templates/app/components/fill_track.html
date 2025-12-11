@@ -66,7 +66,10 @@
 
     <div class="flex flex-row-reverse justify-between mt-6">
       <button type="submit"
-              formaction="{% url 'media_save' %}?next={{ return_url }}"
+              hx-post="{% url 'media_save' %}"
+              hx-target="#media-card-{{ media.id|default:item.media_id }}"
+              hx-swap="outerHTML"
+              hx-vals='{"next": "{{ return_url }}"}'
               class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer">
         {% if media %}
           Update

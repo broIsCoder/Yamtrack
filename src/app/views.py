@@ -520,6 +520,26 @@ def media_save(request):
     if form.is_valid():
         form.save()
         logger.info("%s saved successfully.", form.instance)
+
+        if request.headers.get("HX-Request"):
+            # Re-fetch media to ensure we have fresh data and annotations if needed
+            # We can reuse the instance we just saved
+            instance.refresh_from_db()
+
+            # Helper to enrich just this one item if needed, but simple context might suffice
+            # for the card. The card expects 'media' (BasicMedia) and 'item' (Item).
+            context = {
+                "media": instance,
+                "item": instance.item,
+                "title": instance.item.title,
+                "request": request,
+                # passing other context variables that might be needed by the card
+                "IMG_NONE": config.IMG_NONE,
+                "Status": Status,
+                "MediaTypes": MediaTypes,
+            }
+            return render(request, "app/components/media_card.html", context)
+
     else:
         logger.error(form.errors.as_json())
         for field, errors in form.errors.items():
