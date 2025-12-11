@@ -3,7 +3,7 @@ import time
 
 import requests
 from django.conf import settings
-from pyrate_limiter import RedisBucket
+from pyrate_limiter import MemoryQueueBucket, RedisBucket
 from redis import ConnectionPool
 from requests.adapters import HTTPAdapter
 from requests_ratelimiter import LimiterAdapter, LimiterSession
@@ -25,14 +25,6 @@ logger = logging.getLogger(__name__)
 
 def get_redis_connection():
     """Return a Redis connection pool."""
-    if settings.TESTING or getattr(settings, "NO_REDIS", False):
-        try:
-            import fakeredis  # noqa: PLC0415
-            return fakeredis.FakeStrictRedis().connection_pool
-        except ImportError:
-            # Fallback or error if fakeredis is not installed but NO_REDIS is True
-            # For now, let's assume fakeredis is installed as we are installing it.
-            pass
     return ConnectionPool.from_url(settings.REDIS_URL)
 
 
@@ -41,11 +33,19 @@ redis_pool = get_redis_connection()
 REDIS_PREFIX = getattr(settings, "REDIS_PREFIX", None)
 bucket_name = f"{REDIS_PREFIX}_api" if REDIS_PREFIX else "api"
 
-session = LimiterSession(
-    per_second=5,
-    bucket_class=RedisBucket,
-    bucket_kwargs={"redis_pool": redis_pool, "bucket_name": bucket_name},
-)
+if getattr(settings, "NO_REDIS", False):
+    # Use memory bucket if NO_REDIS is set
+    session = LimiterSession(
+        per_second=5,
+        bucket_class=MemoryQueueBucket,
+    )
+else:
+    # Use Redis bucket
+    session = LimiterSession(
+        per_second=5,
+        bucket_class=RedisBucket,
+        bucket_kwargs={"redis_pool": redis_pool, "bucket_name": bucket_name},
+    )
 
 session.mount("http://", HTTPAdapter(max_retries=3))
 session.mount("https://", HTTPAdapter(max_retries=3))
